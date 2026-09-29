@@ -1,0 +1,41 @@
+[project]
+name = "hesper"
+version = "0.1.0"
+description = "Accessible astronomy alerts for amateur observers"
+requires-python = ">=3.12"
+dependencies = [
+    "Django>=5.2,<5.3",
+    "django-environ>=0.12,<0.13",
+    "django-htmx>=1.26,<2",
+    "gunicorn>=23,<24",
+    "psycopg[binary]>=3.2,<4",
+    "whitenoise>=6.9,<7",
+]
+
+[dependency-groups]
+dev = [
+    "django-stubs>=5.2,<6",
+    "mypy>=1.17,<2",
+    "pytest>=8.4,<9",
+    "pytest-django>=4.11,<5",
+    "ruff>=0.12,<0.13",
+]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+[tool.mypy]
+plugins = ["mypy_django_plugin.main"]
+strict = true
+ignore_missing_imports = true
+
+[tool.django-stubs]
+django_settings_module = "config.settings"

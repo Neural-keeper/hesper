@@ -1,0 +1,27 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}hesper{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+<body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <header class="site-header">
+        <p><strong>hesper</strong></p>
+        <nav class="site-nav" aria-label="Primary navigation">
+            <ul>
+                <li><a href="{% url 'core:home' %}">Home</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main id="main-content" class="site-main">
+        {% block content %}{% endblock %}
+    </main>
+    <footer class="site-footer">
+        <p>Explore the night sky with clarity.</p>
+    </footer>
+</body>
+</html>

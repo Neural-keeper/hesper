@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: hesper
+          POSTGRES_USER: hesper
+          POSTGRES_PASSWORD: hesper
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U hesper -d hesper"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "latest"
+          enable-cache: true
+      - run: uv lock
+      - run: uv sync
+      - run: uv run ruff check .
+      - run: uv run mypy .
+      - run: uv run pytest
+        env:
+          DATABASE_URL: postgres://hesper:hesper@localhost:5432/hesper
+          SECRET_KEY: ci-only-secret
+          DEBUG: "False"
