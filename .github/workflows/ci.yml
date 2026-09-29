@@ -32,9 +32,12 @@ jobs:
           version: "latest"
           enable-cache: true
       - run: uv lock
-      - run: uv sync
+      - run: uv sync --no-install-project
       - run: uv run ruff check .
       - run: uv run mypy .
+      - run: uv run python manage.py check
+      - run: uv run python manage.py makemigrations --check --dry-run
+      - run: uv run python manage.py migrate --plan
       - run: uv run pytest
         env:
           DATABASE_URL: postgres://hesper:hesper@localhost:5432/hesper
