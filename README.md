@@ -8,11 +8,32 @@ This guide walks you through building a working first version of hesper with an 
 
 The goal is a **foundation**: a simple, working, accessible system that is organized so the advanced features in the README (Kafka streaming, the filter language, push notifications) can be added later without a rewrite.
 
+## Develop in Codespaces
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg?repo=Neural-keeper/hesper)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=Neural-keeper/hesper)
+
+The repository includes a development container with Python 3.12, uv, Docker-in-Docker, the Python/Ruff/Django VS Code extensions, and port 8000 forwarded as **hesper web**. The configuration requests the smallest Codespaces machine size: 2 cores. GitHub may offer different sizes depending on account and repository limits.
+
+### Start and stop a Codespace
+
+1. Select the badge above, choose the repository and branch, and create the Codespace.
+2. Wait for the container setup to finish. It installs uv and runs `uv sync` automatically.
+3. Start the development stack from the VS Code terminal with `make up`.
+4. Open the forwarded **hesper web** port when Django is ready.
+5. Stop the Codespace from the Codespaces menu in GitHub, or run `gh codespace stop` from a local GitHub CLI installation. Stopping it preserves the environment without consuming active compute time.
+
+Check remaining free Codespaces hours at [GitHub billing and plans](https://github.com/settings/billing), under **metered usage** and **Codespaces**. Free quotas and account eligibility can change, so use the current billing page as the source of truth.
+
+### Store broker credentials safely
+
+Do not put broker credentials in `.env`, commit them, or add them to `devcontainer.json`. In GitHub, open **Settings > Codespaces > Secrets and variables > Codespaces**, create a secret using the exact environment variable name expected by the broker source, and select the repository access scope. Rebuild or restart the Codespace after adding a secret. Codespaces injects the value into the environment; the application reads it through Django settings. Keep only placeholder variable names in `.env.example`.
+
 ---
 
 ## Contents
 
 - [Part 1: How to work with the AI](#part-1-how-to-work-with-the-ai)
+- [Develop in Codespaces](#develop-in-codespaces)
 - [Part 2: The foundation's design](#part-2-the-foundations-design)
 - [Part 3: The project context file](#part-3-the-project-context-file)
 - [Part 4: Phase prompts](#part-4-phase-prompts)

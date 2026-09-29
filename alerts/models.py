@@ -1,5 +1,4 @@
 from decimal import Decimal
-from typing import Any
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models

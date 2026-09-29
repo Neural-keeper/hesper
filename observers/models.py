@@ -39,7 +39,10 @@ class ObserverProfile(models.Model):
     latitude = models.DecimalField(
         max_digits=7,
         decimal_places=4,
-        validators=[MinValueValidator(Decimal("-90")), MaxValueValidator(Decimal("90"))],
+        validators=[
+            MinValueValidator(Decimal("-90")),
+            MaxValueValidator(Decimal("90")),
+        ],
     )
     longitude = models.DecimalField(
         max_digits=8,

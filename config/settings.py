@@ -13,6 +13,11 @@ environ.Env.read_env(BASE_DIR / ".env")
 SECRET_KEY = env("SECRET_KEY", default="django-insecure-development-key")
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
+
+if env.bool("CODESPACES", default=False):
+    ALLOWED_HOSTS.append(".app.github.dev")
+    CSRF_TRUSTED_ORIGINS.append("https://*.app.github.dev")
 
 INSTALLED_APPS = [
     "django.contrib.admin",

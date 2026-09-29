@@ -1,0 +1,30 @@
+{
+    "name": "hesper",
+    "image": "mcr.microsoft.com/devcontainers/python:1-3.12-bookworm",
+    "features": {
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {
+            "version": "latest",
+            "moby": true
+        }
+    },
+    "hostRequirements": {
+        "cpus": 2
+    },
+    "forwardPorts": [8000],
+    "portsAttributes": {
+        "8000": {
+            "label": "hesper web",
+            "onAutoForward": "openBrowser"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "charliermarsh.ruff",
+                "batisteo.vscode-django"
+            ]
+        }
+    },
+    "postCreateCommand": "python -m pip install uv && uv sync"
+}
