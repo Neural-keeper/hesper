@@ -59,6 +59,21 @@ def test_observer_profile_rejects_unknown_interest(user: User) -> None:
 
 
 @pytest.mark.django_db
+def test_observer_profile_accepts_constellation_and_star_interests(
+    user: User,
+) -> None:
+    profile = ObserverProfile(
+        user=user,
+        display_name="Observer",
+        latitude=Decimal("27.95"),
+        longitude=Decimal("-82.46"),
+        interests=["constellation:Orion", "star:Betelgeuse"],
+    )
+
+    profile.full_clean()
+
+
+@pytest.mark.django_db
 def test_observer_profile_rejects_malformed_interests(user: User) -> None:
     profile = make_profile(user)
     profile.interests = "supernova"

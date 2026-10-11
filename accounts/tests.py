@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.test import Client
 from django.urls import reverse
 
+from lore.models import CulturalConstellation, SkyCulture, Star
 from observers.models import ObserverProfile
 
 
@@ -90,3 +91,38 @@ def test_theme_is_applied_in_rendered_html(client: Client) -> None:
     response = client.get(reverse("core:home"))
 
     assert b'<html lang="en" data-theme="dark">' in response.content
+
+
+@pytest.mark.django_db
+def test_profile_form_lists_constellations_and_named_stars() -> None:
+    from .forms import ObserverProfileForm
+
+    culture = SkyCulture.objects.create(
+        name="Modern (IAU)",
+        region_or_people="World",
+        description="Modern lore",
+        source_url="https://example.com/modern",
+        license="CC BY-SA 4.0",
+        credit_text="Stellarium's team",
+    )
+    CulturalConstellation.objects.create(
+        culture=culture,
+        native_name="Orion",
+        english_name="Orion",
+        description="The hunter",
+        stars=[],
+        source_url="https://example.com/orion",
+        license="CC BY-SA 4.0",
+    )
+    Star.objects.create(
+        hip_number=27989,
+        proper_name="Betelgeuse",
+        ra_deg=88.79,
+        dec_deg=7.4,
+        magnitude=0.5,
+    )
+
+    choices = dict(ObserverProfileForm().fields["interests"].choices)
+
+    assert choices["constellation:Orion"] == "Orion"
+    assert choices["star:Betelgeuse"] == "Betelgeuse"

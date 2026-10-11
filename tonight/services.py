@@ -7,7 +7,12 @@ from django.core.cache import cache
 
 from alerts.models import Alert
 from lore.services import lore_for_position
-from observers.models import ObserverProfile
+from observers.models import (
+    ALERT_INTERESTS,
+    CONSTELLATION_INTEREST_PREFIX,
+    STAR_INTEREST_PREFIX,
+    ObserverProfile,
+)
 from sky import (
     ObserverLocation,
     constellation_of,
@@ -19,6 +24,21 @@ from .types import MatchedAlert
 
 CACHE_TIMEOUT_SECONDS = 10 * 60
 LOOKBACK = timedelta(hours=48)
+
+
+def _interest_matches(
+    alert: Alert,
+    interests: set[str],
+    constellation_name: str,
+    nearest_star_name: str | None,
+) -> bool:
+    if alert.alert_class in interests:
+        return True
+    if f"{CONSTELLATION_INTEREST_PREFIX}{constellation_name}" in interests:
+        return True
+    return nearest_star_name is not None and (
+        f"{STAR_INTEREST_PREFIX}{nearest_star_name}" in interests
+    )
 
 
 def _cache_key(profile: ObserverProfile, now: datetime) -> str:
@@ -50,12 +70,18 @@ def match_alerts_for_observer(
         return []
 
     interests = set(profile.interests)
+    alert_class_interests = interests & ALERT_INTERESTS
     candidates = Alert.objects.filter(
         observed_at__gte=current - LOOKBACK,
         observed_at__lte=current,
         magnitude__lte=profile.limiting_magnitude,
-        alert_class__in=interests,
     )
+    has_location_interests = any(
+        item.startswith((CONSTELLATION_INTEREST_PREFIX, STAR_INTEREST_PREFIX))
+        for item in interests
+    )
+    if alert_class_interests and not has_location_interests:
+        candidates = candidates.filter(alert_class__in=alert_class_interests)
     location = ObserverLocation(
         latitude=float(profile.latitude),
         longitude=float(profile.longitude),
@@ -63,6 +89,15 @@ def match_alerts_for_observer(
     )
     matches: list[MatchedAlert] = []
     for alert in candidates:
+        constellation = constellation_of(float(alert.ra_deg), float(alert.dec_deg))
+        lore = lore_for_position(float(alert.ra_deg), float(alert.dec_deg))
+        if not _interest_matches(
+            alert,
+            interests,
+            constellation.name,
+            lore.nearest_star.proper_name if lore.nearest_star else None,
+        ):
+            continue
         result = visibility(
             float(alert.ra_deg),
             float(alert.dec_deg),
@@ -76,10 +111,8 @@ def match_alerts_for_observer(
             MatchedAlert(
                 alert=alert,
                 visibility=result,
-                constellation=constellation_of(
-                    float(alert.ra_deg), float(alert.dec_deg)
-                ),
-                lore=lore_for_position(float(alert.ra_deg), float(alert.dec_deg)),
+                constellation=constellation,
+                lore=lore,
             )
         )
     matches.sort(key=lambda match: cast(datetime, match.visibility.best_time))

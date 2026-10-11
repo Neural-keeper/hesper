@@ -8,6 +8,8 @@ from django.test import Client
 from django.urls import reverse
 
 from alerts.models import Alert
+from lore.models import Star
+from lore.services import LoreResult
 from observers.models import ObserverProfile
 from sky.types import ConstellationInfo, NightWindow, Visibility
 
@@ -99,6 +101,48 @@ def test_matching_filters_interests_and_magnitude_and_sorts(
     matches = match_alerts_for_observer(profile, NOW)
 
     assert [match.alert.source_alert_id for match in matches] == ["first", "second"]
+
+
+@pytest.mark.django_db
+def test_matching_supports_constellation_and_named_star_interests(
+    profile: ObserverProfile,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    profile.interests = ["constellation:Orion", "star:Betelgeuse"]
+    profile.save(update_fields=["interests"])
+    first = create_alert("orion")
+    create_alert("other", ra="120")
+    betelgeuse = Star.objects.create(
+        hip_number=27989,
+        proper_name="Betelgeuse",
+        ra_deg=88.79,
+        dec_deg=7.4,
+        magnitude=0.5,
+    )
+
+    monkeypatch.setattr("tonight.services.dark_window", lambda *args: fake_window())
+    monkeypatch.setattr("tonight.services.visibility", lambda *args: fake_visibility(1))
+    monkeypatch.setattr(
+        "tonight.services.constellation_of",
+        lambda ra, dec: ConstellationInfo("Ori", "Orion")
+        if ra == float(first.ra_deg)
+        else ConstellationInfo("And", "Andromeda"),
+    )
+    monkeypatch.setattr(
+        "tonight.services.lore_for_position",
+        lambda ra, dec: LoreResult(
+            "Orion",
+            betelgeuse
+            if ra == float(first.ra_deg)
+            else None,
+            (),
+        ),
+    )
+    cache.clear()
+
+    matches = match_alerts_for_observer(profile, NOW)
+
+    assert [match.alert.source_alert_id for match in matches] == ["orion"]
 
 
 @pytest.mark.django_db
