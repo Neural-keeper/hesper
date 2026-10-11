@@ -51,7 +51,7 @@ class Alert(models.Model):
         ],
     )
     cutout_url = models.URLField(blank=True, null=True)
-    raw = models.JSONField(default=dict)
+    raw = models.JSONField(default=dict, blank=True)
 
     class Meta:
         constraints = [

@@ -68,7 +68,11 @@ class ObserverProfile(models.Model):
         default=Decimal("14"),
         validators=[MinValueValidator(Decimal("5")), MaxValueValidator(Decimal("20"))],
     )
-    interests = models.JSONField(default=list, validators=[validate_interests])
+    interests = models.JSONField(
+        default=list,
+        blank=True,
+        validators=[validate_interests],
+    )
     theme = models.CharField(
         max_length=9, choices=Theme.choices, default=Theme.SYSTEM
     )
