@@ -3,6 +3,58 @@
 {% block title %}hesper | Tonight's sky{% endblock %}
 
 {% block content %}
-<h1>hesper</h1>
-<p>Find astronomical alerts that are visible from your night sky.</p>
+<section class="hero">
+    <div class="hero-copy">
+        <h1>hesper</h1>
+        <p class="eyebrow">YOUR NIGHT, MADE VISIBLE</p>
+        <h2 class="hero-title">Find what is changing in the sky <em>tonight.</em></h2>
+        <p class="hero-lede">
+            Hesper turns live astronomical alerts into a calm, personal observing list:
+            the objects you can actually see, from where you are standing.
+        </p>
+        <div class="hero-actions">
+            {% if user.is_authenticated %}
+                <a class="button button-primary" href="{% url 'tonight:index' %}">Open tonight's sky <span aria-hidden="true">→</span></a>
+                <a class="button button-quiet" href="{% url 'accounts:settings' %}">Update my profile</a>
+            {% else %}
+                <a class="button button-primary" href="{% url 'accounts:signup' %}">Start observing <span aria-hidden="true">→</span></a>
+                <a class="button button-quiet" href="{% url 'accounts:login' %}">I already have an account</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+        <div class="orbit orbit-one"></div>
+        <div class="orbit orbit-two"></div>
+        <span class="hero-star star-one">✦</span>
+        <span class="hero-star star-two">·</span>
+        <span class="hero-star star-three">✧</span>
+        <span class="hero-planet"></span>
+    </div>
+</section>
+
+<section class="feature-strip" aria-label="How hesper works">
+    <article>
+        <span class="feature-number">01</span>
+        <h2>Tell us about your sky</h2>
+        <p>Set your location, equipment, and the kinds of alerts you want to follow.</p>
+    </article>
+    <article>
+        <span class="feature-number">02</span>
+        <h2>We do the astronomy</h2>
+        <p>Hesper checks darkness, altitude, moon separation, and your limiting magnitude.</p>
+    </article>
+    <article>
+        <span class="feature-number">03</span>
+        <h2>Step outside</h2>
+        <p>Get a short, useful list with the best time to look and where to find it.</p>
+    </article>
+</section>
+
+<section class="home-callout">
+    <div>
+        <p class="eyebrow">BUILT FOR OBSERVERS</p>
+        <h2>Less scrolling. More looking up.</h2>
+    </div>
+    <p>Designed for a dark room, a small screen, and the few minutes before you head outside.</p>
+</section>
 {% endblock %}

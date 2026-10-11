@@ -1,18 +1,25 @@
 {% load tonight_tags %}
 <section id="match-results" aria-live="polite" aria-labelledby="matches-heading">
-    <h2 id="matches-heading">Observable alerts</h2>
+    <div class="section-heading matches-heading">
+        <div>
+            <p class="eyebrow">MATCHED FOR YOUR EQUIPMENT</p>
+            <h2 id="matches-heading">Observable alerts</h2>
+        </div>
+    </div>
     {% if matches %}
         <div class="alert-list">
             {% for match in matches %}
                 <article class="alert-card">
-                    <h3>
-                        {{ match.alert.alert_class|title_class }},
-                        {{ match.alert.class_confidence|confidence_percent }}
-                    </h3>
+                    <div class="alert-card-topline">
+                        <span class="alert-class">{{ match.alert.alert_class|title_class }}</span>
+                        <span class="confidence">{{ match.alert.class_confidence|confidence_percent }}</span>
+                    </div>
+                    <h3>{{ match.constellation.name }} <span class="constellation-abbr">{{ match.constellation.abbreviation }}</span></h3>
                     {% if match.alert.source == "sample" %}
                         <p class="sample-label">Sample data</p>
                     {% endif %}
-                    <dl>
+                    <p class="alert-location">{{ match.alert.ra_deg }}° RA · {{ match.alert.dec_deg }}° Dec · {{ match.alert.source_alert_id }}</p>
+                    <dl class="alert-details">
                         <dt>Brightness</dt>
                         <dd>{{ match.alert.magnitude }}{% if match.alert.band %} {{ match.alert.band }} band{% endif %}</dd>
                         <dt>Constellation</dt>
@@ -28,7 +35,7 @@
                         <dt>Moon separation</dt>
                         <dd>{{ match.visibility.moon_separation_deg|floatformat:1 }} degrees</dd>
                     </dl>
-                    <p class="visibility-status">Observable tonight.</p>
+                    <p class="visibility-status"><span aria-hidden="true">●</span> Observable tonight</p>
                     {% if match.alert.cutout_url %}
                         <img src="{{ match.alert.cutout_url }}"
                              alt="Sky cutout for {{ match.alert.alert_class|title_class }} alert {{ match.alert.source_alert_id }}">

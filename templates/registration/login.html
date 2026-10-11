@@ -2,6 +2,7 @@
 {% block title %}Log in | hesper{% endblock %}
 {% block content %}
 <h1>Log in</h1>
+<p class="page-intro">Return to your personal view of the night sky.</p>
 {% include "forms/_errors.html" %}
 <form method="post" novalidate>
     {% csrf_token %}

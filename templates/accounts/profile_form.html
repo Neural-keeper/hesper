@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 {% block title %}{{ page_title }} | hesper{% endblock %}
 {% block content %}
+<p class="eyebrow">YOUR OBSERVATORY</p>
 <h1>{{ page_title }}</h1>
+<p class="page-intro">A few details help us turn a stream of alerts into a useful observing plan.</p>
 {% include "forms/_errors.html" %}
 <form method="post" novalidate>
     {% csrf_token %}
@@ -19,14 +21,14 @@
         </p>
     {% endfor %}
     <p>
-        <button type="button" id="use-location">Use my current location</button>
+        <button type="button" id="use-location" class="button button-secondary">Use my current location</button>
         <small>This is optional. Your browser will ask permission and fill in latitude and longitude; manual entry always works.</small>
         <span id="location-status" role="status"></span>
     </p>
     {% if form.instance.timezone and form.instance.pk %}
         <p class="timezone-result">Time zone: <strong>{{ form.instance.timezone }}</strong></p>
     {% endif %}
-    <button type="submit">Save profile</button>
+    <button type="submit" class="button button-primary">Save profile <span aria-hidden="true">→</span></button>
 </form>
 <script>
 document.getElementById("use-location").addEventListener("click", function () {
