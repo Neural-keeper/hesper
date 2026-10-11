@@ -1,3 +1,4 @@
+from decimal import Decimal
 from pathlib import Path
 
 import environ
@@ -12,6 +13,10 @@ environ.Env.read_env(BASE_DIR / ".env")
 
 SECRET_KEY = env("SECRET_KEY", default="django-insecure-development-key")
 DEBUG = env("DEBUG")
+ALERT_SOURCE = env("ALERT_SOURCE", default="sample")
+INGEST_MAX_MAGNITUDE = env(
+    "INGEST_MAX_MAGNITUDE", default=Decimal("20"), cast=Decimal
+)
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 

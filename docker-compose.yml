@@ -23,19 +23,30 @@ services:
       DATABASE_URL: postgres://hesper:hesper@db:5432/hesper
     ports:
       - "8000:8000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          ".venv/bin/python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/', timeout=2)",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
     depends_on:
       db:
         condition: service_healthy
 
   worker:
     build: .
-    command: ["sleep", "infinity"]
+    command: [".venv/bin/python", "manage.py", "run_ingest"]
     environment:
       DEBUG: "True"
       SECRET_KEY: development-only-secret
       DATABASE_URL: postgres://hesper:hesper@db:5432/hesper
     depends_on:
-      db:
+      web:
         condition: service_healthy
 
 volumes:
