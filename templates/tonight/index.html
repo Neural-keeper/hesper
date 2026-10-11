@@ -51,7 +51,7 @@
             <option value="">All interested classes</option>
             {% for choice in interest_choices %}
                 <option value="{{ choice }}" {% if choice == selected_class %}selected{% endif %}>
-                    {{ choice|title_class }}
+                    {{ choice|interest_label }}
                 </option>
             {% endfor %}
             </select>

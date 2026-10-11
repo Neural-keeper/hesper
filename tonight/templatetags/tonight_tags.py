@@ -35,3 +35,15 @@ def title_class(value: object) -> str:
     if not value:
         return "Unclassified"
     return str(value).replace("_", " ").title()
+
+
+@register.filter
+def interest_label(value: object) -> str:
+    if not value:
+        return "Unclassified"
+    text = str(value)
+    if text.startswith("constellation:"):
+        return text.split(":", 1)[1]
+    if text.startswith("star:"):
+        return text.split(":", 1)[1]
+    return text.replace("_", " ").title()

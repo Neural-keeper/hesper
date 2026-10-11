@@ -14,6 +14,7 @@ from observers.models import ObserverProfile
 from sky.types import ConstellationInfo, NightWindow, Visibility
 
 from .services import match_alerts_for_observer
+from .templatetags.tonight_tags import interest_label
 from .types import MatchedAlert
 
 NOW = datetime(2026, 1, 15, 18, tzinfo=timezone.utc)
@@ -145,6 +146,12 @@ def test_matching_supports_constellation_and_named_star_interests(
     assert [match.alert.source_alert_id for match in matches] == ["orion"]
 
 
+def test_interest_label_formats_named_constellations_and_stars() -> None:
+    assert interest_label("constellation:Orion") == "Orion"
+    assert interest_label("star:Betelgeuse") == "Betelgeuse"
+    assert interest_label("variable_star") == "Variable Star"
+
+
 @pytest.mark.django_db
 def test_matching_cache_avoids_recomputing(
     profile: ObserverProfile,
@@ -202,6 +209,51 @@ def test_page_renders_empty_state_for_user_with_no_matches(
     assert response.status_code == 200
     assert b"Nothing brighter than magnitude" in response.content
     assert b'aria-live="polite"' in response.content
+
+
+@pytest.mark.django_db
+def test_page_filters_named_constellation_and_star_interests(
+    client: Client,
+    profile: ObserverProfile,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    profile.interests = ["constellation:Orion", "star:Betelgeuse"]
+    profile.save(update_fields=["interests"])
+    client.force_login(profile.user)
+    orion_match = MatchedAlert(
+        alert=create_alert("orion"),
+        visibility=fake_visibility(1),
+        constellation=ConstellationInfo("Ori", "Orion"),
+        lore=LoreResult(
+            "Orion",
+            Star.objects.create(
+                hip_number=27989,
+                proper_name="Betelgeuse",
+                ra_deg=88.79,
+                dec_deg=7.4,
+                magnitude=0.5,
+            ),
+            (),
+        ),
+    )
+    andromeda_match = MatchedAlert(
+        alert=create_alert("andromeda", ra="120", dec="40"),
+        visibility=fake_visibility(2),
+        constellation=ConstellationInfo("And", "Andromeda"),
+        lore=LoreResult("Andromeda", None, ()),
+    )
+    monkeypatch.setattr(
+        "tonight.views.match_alerts_for_observer",
+        lambda profile, now: [orion_match, andromeda_match],
+    )
+    monkeypatch.setattr("tonight.views.dark_window", lambda *args: fake_window())
+    monkeypatch.setattr("tonight.views.visibility", lambda *args: fake_visibility(1))
+
+    response = client.get(reverse("tonight:index"), {"class": "constellation:Orion"})
+
+    assert response.status_code == 200
+    assert b"Orion" in response.content
+    assert b"Andromeda" not in response.content
 
 
 @pytest.mark.django_db

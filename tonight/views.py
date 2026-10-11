@@ -10,7 +10,12 @@ from django.shortcuts import get_object_or_404, render
 from django.views import View
 
 from lore.models import SkyCulture
-from observers.models import ObserverProfile
+from observers.models import (
+    ALERT_INTERESTS,
+    CONSTELLATION_INTEREST_PREFIX,
+    STAR_INTEREST_PREFIX,
+    ObserverProfile,
+)
 from sky import ObserverLocation, dark_window, visibility
 
 from .services import match_alerts_for_observer
@@ -26,10 +31,27 @@ class TonightView(LoginRequiredMixin, View):
         matches = match_alerts_for_observer(profile, now)
         selected_class = request.GET.get("class", "").strip()
         maximum_magnitude = request.GET.get("max_magnitude", "").strip()
+
+        def matches_selected_interest(match: object) -> bool:
+            if not selected_class:
+                return True
+            if selected_class in ALERT_INTERESTS:
+                return getattr(match.alert, "alert_class", None) == selected_class
+            if selected_class.startswith(CONSTELLATION_INTEREST_PREFIX):
+                target = selected_class.removeprefix(CONSTELLATION_INTEREST_PREFIX)
+                return getattr(match.constellation, "name", None) == target
+            if selected_class.startswith(STAR_INTEREST_PREFIX):
+                target = selected_class.removeprefix(STAR_INTEREST_PREFIX)
+                nearest_star = getattr(
+                    getattr(match, "lore", None),
+                    "nearest_star",
+                    None,
+                )
+                return bool(nearest_star) and nearest_star.proper_name == target
+            return False
+
         filtered_matches = [
-            match
-            for match in matches
-            if not selected_class or match.alert.alert_class == selected_class
+            match for match in matches if matches_selected_interest(match)
         ]
         if maximum_magnitude:
             try:
