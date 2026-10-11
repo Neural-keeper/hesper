@@ -5,7 +5,7 @@ import time
 from datetime import datetime, timezone
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand, CommandError, CommandParser
 
 from alerts.services import (
     get_source,
@@ -20,13 +20,19 @@ logger = logging.getLogger(__name__)
 class Command(BaseCommand):
     help = "Fetch alerts from the configured broker source."
 
-    def add_arguments(self, parser) -> None:
+    def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument("--source", default=None)
         parser.add_argument("--once", action="store_true")
         parser.add_argument("--interval", type=int, default=1800)
 
     def handle(self, *args: object, **options: object) -> None:
-        source_name = options["source"] or settings.ALERT_SOURCE
+        source_name = options.get("source") or settings.ALERT_SOURCE
+        if not isinstance(source_name, str):
+            raise CommandError("The alert source name must be a string.")
+        once = options.get("once", False) is True
+        interval = options.get("interval", 1800)
+        if not isinstance(interval, int):
+            raise CommandError("The ingest interval must be an integer.")
         try:
             source = get_source(source_name)
         except ValueError as error:
@@ -43,8 +49,8 @@ class Command(BaseCommand):
                 )
             except (OSError, ValueError, KeyError, TypeError):
                 logger.exception("Alert ingestion failed for %s", source_name)
-                if options["once"]:
+                if once:
                     return
-            if options["once"]:
+            if once:
                 return
-            time.sleep(options["interval"])
+            time.sleep(interval)

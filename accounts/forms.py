@@ -35,19 +35,21 @@ class ObserverProfileForm(forms.ModelForm):  # type: ignore[type-arg]
         constellation_choices = [
             (
                 f"constellation:{constellation.native_name}",
-                constellation.english_name or constellation.native_name,
+                str(constellation.english_name or constellation.native_name or ""),
             )
             for constellation in CulturalConstellation.objects.filter(
                 culture__name="Modern (IAU)"
             ).order_by("english_name", "native_name")
         ]
         star_choices = [
-            (f"star:{star.proper_name}", star.proper_name)
+            (f"star:{star.proper_name}", str(star.proper_name))
             for star in Star.objects.filter(proper_name__isnull=False)
             .exclude(proper_name="")
             .order_by("proper_name")
         ]
-        return alert_choices + constellation_choices + star_choices
+        return alert_choices + [
+            (value, label or "") for value, label in constellation_choices
+        ] + star_choices
 
     interests = forms.MultipleChoiceField(
         choices=(),
@@ -108,7 +110,9 @@ class ObserverProfileForm(forms.ModelForm):  # type: ignore[type-arg]
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.fields["interests"].choices = self._interest_choices()
+        interests = self.fields["interests"]
+        assert isinstance(interests, forms.MultipleChoiceField)
+        interests.choices = self._interest_choices()
         if self.instance.pk:
             self.initial["interests"] = self.instance.interests
         for name, field in self.fields.items():

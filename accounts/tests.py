@@ -1,6 +1,8 @@
 from decimal import Decimal
+from typing import cast
 
 import pytest
+from django import forms
 from django.contrib.auth import get_user_model
 from django.test import Client
 from django.urls import reverse
@@ -122,7 +124,9 @@ def test_profile_form_lists_constellations_and_named_stars() -> None:
         magnitude=0.5,
     )
 
-    choices = dict(ObserverProfileForm().fields["interests"].choices)
+    interests = ObserverProfileForm().fields["interests"]
+    assert isinstance(interests, forms.MultipleChoiceField)
+    choices = dict(cast(list[tuple[str, str]], interests.choices))
 
     assert choices["constellation:Orion"] == "Orion"
     assert choices["star:Betelgeuse"] == "Betelgeuse"

@@ -8,12 +8,13 @@ from django.db import IntegrityError
 
 from .models import Alert, IngestionState
 from .sources.alerce import AlerceSource
+from .sources.base import AlertSource
 from .sources.sample import SampleSource
 
 logger = logging.getLogger(__name__)
 
 
-def get_source(name: str):
+def get_source(name: str) -> AlertSource:
     if name == "alerce":
         return AlerceSource()
     if name == "sample":
@@ -21,7 +22,7 @@ def get_source(name: str):
     raise ValueError(f"Unsupported alert source: {name}")
 
 
-def ingest(source, since: datetime) -> tuple[int, int, int]:
+def ingest(source: AlertSource, since: datetime) -> tuple[int, int, int]:
     created = skipped = invalid = 0
     for normalized in source.fetch(since):
         if normalized.magnitude > settings.INGEST_MAX_MAGNITUDE:

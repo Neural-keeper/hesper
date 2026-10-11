@@ -181,10 +181,10 @@ class Command(BaseCommand):
             )
             index = json.loads((folder / "index.json").read_text(encoding="utf-8"))
             if directory == "greek_almagest":
-                descriptions = _greek_descriptions(description)
+                greek_descriptions = _greek_descriptions(description)
                 for record in index.get("constellations", []):
                     abbreviation = record["id"].rsplit(" ", 1)[-1]
-                    parsed = descriptions.get(abbreviation)
+                    parsed = greek_descriptions.get(abbreviation)
                     if parsed is None:
                         skipped_count += 1
                         continue
@@ -206,7 +206,7 @@ class Command(BaseCommand):
                         common_name.get("pronounce", ""),
                         common_name.get("native", ""),
                     )
-                    text = next(
+                    constellation_text = next(
                         (
                             descriptions[_normalized(candidate)]
                             for candidate in candidates
@@ -214,11 +214,16 @@ class Command(BaseCommand):
                         ),
                         None,
                     )
-                    if not text:
+                    if not constellation_text:
                         skipped_count += 1
                         continue
                     self._upsert_constellation(
-                        culture, record, common_name, text, None, directory
+                        culture,
+                        record,
+                        common_name,
+                        constellation_text,
+                        None,
+                        directory,
                     )
         imported_names = [name for _, name, _ in configs]
         return (
