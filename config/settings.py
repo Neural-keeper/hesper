@@ -14,6 +14,7 @@ environ.Env.read_env(BASE_DIR / ".env")
 SECRET_KEY = env("SECRET_KEY", default="django-insecure-development-key")
 DEBUG = env("DEBUG")
 ALERT_SOURCE = env("ALERT_SOURCE", default="sample")
+ALERT_RETENTION_DAYS = env.int("ALERT_RETENTION_DAYS", default=7)
 INGEST_MAX_MAGNITUDE = env(
     "INGEST_MAX_MAGNITUDE", default=Decimal("20"), cast=Decimal
 )
@@ -78,6 +79,12 @@ DATABASES = {
         default="sqlite:///" + str(BASE_DIR / "db.sqlite3"),
     )
 }
+DATABASES["default"]["CONN_MAX_AGE"] = env.int("CONN_MAX_AGE", default=60)
+DATABASES["default"]["CONN_HEALTH_CHECKS"] = env.bool(
+    "CONN_HEALTH_CHECKS", default=True
+)
+if env.bool("DATABASE_SSL_REQUIRE", default=False):
+    DATABASES["default"].setdefault("OPTIONS", {})["sslmode"] = "require"
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -101,8 +108,17 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "core" / "static"]
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    },
 }
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_HSTS_SECONDS = env.int("SECURE_HSTS_SECONDS", default=0 if DEBUG else 3600)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
+SECURE_HSTS_PRELOAD = not DEBUG
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_URL = "accounts:login"

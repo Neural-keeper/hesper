@@ -1,0 +1,58 @@
+name: Ingest alerts
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: latest
+          enable-cache: true
+      - run: uv sync --frozen --no-dev
+      - name: Ingest alerts
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_SSL_REQUIRE: "true"
+          SECRET_KEY: workflow-only-placeholder
+          DEBUG: "False"
+          ALERT_SOURCE: alerce
+        run: |
+          set -eu
+          echo "Starting alert ingestion"
+          uv run python manage.py run_ingest --once
+          echo "Alert ingestion completed"
+
+  prune:
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '0 3 * * *'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: latest
+          enable-cache: true
+      - run: uv sync --frozen --no-dev
+      - name: Prune old alerts
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_SSL_REQUIRE: "true"
+          SECRET_KEY: workflow-only-placeholder
+          DEBUG: "False"
+          ALERT_RETENTION_DAYS: "7"
+        run: |
+          set -eu
+          echo "Starting alert retention cleanup"
+          uv run python manage.py prune_alerts
+          echo "Alert retention cleanup completed"
