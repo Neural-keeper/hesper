@@ -42,6 +42,12 @@ Health Check Path: /healthz
 reference `css/main.css` return a server error even though `/healthz` still
 returns 200.
 
+If Render is configured as a Docker service, it does not use the Python
+`buildCommand` from the Blueprint. The repository's [Dockerfile](../Dockerfile)
+runs `collectstatic` while building the image, and the entrypoint runs database
+migrations when the container starts. Deploy the latest commit to apply those
+Docker build steps.
+
 Set these Render environment variables:
 
 | Variable | Value |

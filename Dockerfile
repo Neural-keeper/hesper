@@ -15,6 +15,8 @@ RUN uv sync --no-dev
 
 COPY . .
 
+RUN uv run python manage.py collectstatic --no-input
+
 RUN chmod +x /app/docker-entrypoint.sh
 
 EXPOSE 8000
