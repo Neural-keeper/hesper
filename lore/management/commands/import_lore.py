@@ -160,6 +160,7 @@ class Command(BaseCommand):
 
     def _import_cultures(self) -> tuple[int, int, int]:
         configs = (
+            ("modern", "Modern (IAU)", "World"),
             ("indian", "Indian Vedic", "Southern Asia"),
             ("greek_almagest", "Greek (Almagest)", "Northern Africa"),
             ("indian_nakshatras", "Indian (Nakshatras)", "India"),

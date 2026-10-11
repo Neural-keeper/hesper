@@ -24,6 +24,24 @@ def test_import_lore_is_idempotent() -> None:
 
 
 @pytest.mark.django_db
+def test_import_lore_includes_all_modern_constellations() -> None:
+    call_command("import_lore")
+
+    modern = SkyCulture.objects.get(name="Modern (IAU)")
+
+    assert modern.license == (
+        "Text and data: CC BY-SA 4.0\n\nIllustrations: Free Art License"
+    )
+    assert modern.constellations.count() == 88
+    assert modern.constellations.get(english_name="Orion").description.startswith(
+        "The famous hunter Orion was killed by a Scorpion"
+    )
+    assert modern.constellations.get(english_name="Scorpion").description.startswith(
+        "When Orion boasted to Artemis"
+    )
+
+
+@pytest.mark.django_db
 def test_lore_near_betelgeuse_returns_iau_star_and_culture(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

@@ -3,6 +3,15 @@
 Downloaded 2026-10-11. Stellarium culture files are pinned to commit
 `3059843b82e22e31bd3e0f7cf13d0f292e72ef54`.
 
+## Stellarium modern sky culture
+
+- **Data:** [skycultures/modern at the pinned commit](https://github.com/Stellarium/stellarium/tree/3059843b82e22e31bd3e0f7cf13d0f292e72ef54/skycultures/modern)
+- **Downloaded to:** `stellarium/modern/`
+- **License:** CC BY-SA 4.0, as stated in `description.md`
+- **Required credit:** Stellarium's team. Preserve the CC BY-SA 4.0
+  notice and share adaptations under the same license.
+- **License evidence:** [description.md](https://raw.githubusercontent.com/Stellarium/stellarium/3059843b82e22e31bd3e0f7cf13d0f292e72ef54/skycultures/modern/description.md)
+
 ## Stellarium Indian Vedic sky culture
 
 - **Data:** [skycultures/indian at the pinned commit](https://github.com/Stellarium/stellarium/tree/3059843b82e22e31bd3e0f7cf13d0f292e72ef54/skycultures/indian)
