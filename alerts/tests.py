@@ -56,7 +56,7 @@ def test_alert_source_and_id_are_unique() -> None:
 
 
 
-def test_normalized_alert_is_frozen():
+def test_normalized_alert_is_frozen() -> None:
     alert = NormalizedAlert(
         source="sample",
         source_alert_id="alert-1",
