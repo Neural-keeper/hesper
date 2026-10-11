@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import warnings
 from datetime import datetime, timedelta, timezone
 from math import cos, log10
 from typing import cast
 
 import astropy.units as u
 from astroplan import Observer
+from astroplan.exceptions import TargetAlwaysUpWarning, TargetNeverUpWarning
 from astropy.coordinates import (
     AltAz,
     EarthLocation,
@@ -156,11 +158,20 @@ def dark_window(
                 }[horizon]
                 evening_method = getattr(observer, f"twilight_evening_{event_name}")
                 morning_method = getattr(observer, f"twilight_morning_{event_name}")
-                evening = evening_method(
-                    Time(anchor + timedelta(days=day)), which="next"
-                )
-                morning = morning_method(evening + 1 * u.min, which="next")
-            except (ValueError, TypeError, IndexError):
+                with warnings.catch_warnings():
+                    warnings.filterwarnings("error", category=TargetAlwaysUpWarning)
+                    warnings.filterwarnings("error", category=TargetNeverUpWarning)
+                    evening = evening_method(
+                        Time(anchor + timedelta(days=day)), which="next"
+                    )
+                    morning = morning_method(evening + 1 * u.min, which="next")
+            except (
+                ValueError,
+                TypeError,
+                IndexError,
+                TargetAlwaysUpWarning,
+                TargetNeverUpWarning,
+            ):
                 continue
             start, end = _utc_datetime(evening), _utc_datetime(morning)
             if end > start:
@@ -218,7 +229,8 @@ def visibility(
         None,
     )
     moon = get_body("moon", astropy_times, location=location)
-    separation = target.separation(moon).deg[best_index]
+    target_in_moon_frame = target.transform_to(moon.frame)
+    separation = target_in_moon_frame.separation(moon).deg[best_index]
     moon_at_best = get_body("moon", Time(best_time), location=location)
     sun_at_best = get_body("sun", Time(best_time), location=location)
     elongation = moon_at_best.separation(sun_at_best).rad
