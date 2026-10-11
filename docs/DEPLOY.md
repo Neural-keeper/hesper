@@ -28,6 +28,20 @@ Create a Web Service from the repository and select the Free plan. The
 - `startCommand` runs Gunicorn and binds to Render's `$PORT`.
 - `healthCheckPath` uses `/healthz`, which does not touch the database.
 
+If the service was created manually instead of from the Blueprint, set these
+commands explicitly:
+
+```text
+Build Command: pip install uv && uv sync --frozen --no-dev && uv run python manage.py collectstatic --no-input && uv run python manage.py migrate --noinput
+Start Command: uv run gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
+Health Check Path: /healthz
+```
+
+`collectstatic` is required before the first request. Production uses
+`CompressedManifestStaticFilesStorage`; without the build step, pages that
+reference `css/main.css` return a server error even though `/healthz` still
+returns 200.
+
 Set these Render environment variables:
 
 | Variable | Value |
@@ -49,6 +63,11 @@ Set these Render environment variables:
 chance of retaining a connection after Neon suspends an idle compute. Django's
 connection health checks validate a reused connection before handing it to a
 request. Neon SSL is required by both the URL and `DATABASE_SSL_REQUIRE`.
+
+Use the hostname only in `ALLOWED_HOSTS` (for example,
+`hesper.onrender.com`), without `https://`. Use the full origin, including the
+scheme, in `CSRF_TRUSTED_ORIGINS` (for example,
+`https://hesper.onrender.com`).
 
 Do not add a Render worker: ingestion runs in GitHub Actions on the free plan.
 
@@ -80,6 +99,12 @@ After Render deploys, verify:
 https://<your-service>.onrender.com/healthz
 https://<your-service>.onrender.com/healthz/db
 ```
+
+If the deployment returns 500 for `/` but `/healthz` returns 200, inspect the
+Render deploy log for `collectstatic`. Re-run the deployment after correcting
+the Build Command above. A 500 that persists after a successful static-file
+collection should be diagnosed from the Render runtime log; do not put
+database URLs or other secrets in screenshots or issue reports.
 
 The first request can be slow while the free service wakes. From a local
 checkout with deployment environment variables supplied out-of-band, run:
