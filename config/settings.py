@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_htmx",
+    "accounts",
     "core",
     "observers",
     "alerts",
@@ -99,3 +100,7 @@ STORAGES = {
 }
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+LOGIN_URL = "accounts:login"
+LOGIN_REDIRECT_URL = "tonight:index"
+LOGOUT_REDIRECT_URL = "core:home"
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

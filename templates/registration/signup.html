@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Sign up | hesper{% endblock %}
+{% block content %}
+<h1>Sign up</h1>
+<p>Create an account to save your observing location and preferences.</p>
+{% include "forms/_errors.html" %}
+<form method="post" novalidate>
+    {% csrf_token %}
+    {% for field in form %}
+        <p class="form-field">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.help_text %}<small id="id_{{ field.name }}_help">{{ field.help_text }}</small>{% endif %}
+            {% for error in field.errors %}<span class="field-error" id="id_{{ field.name }}_error">{{ error }}</span>{% endfor %}
+        </p>
+    {% endfor %}
+    <button type="submit">Create account</button>
+</form>
+<p>Already have an account? <a href="{% url 'accounts:login' %}">Log in</a>.</p>
+{% endblock %}
