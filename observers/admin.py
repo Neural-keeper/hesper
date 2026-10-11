@@ -4,7 +4,7 @@ from .models import ObserverProfile
 
 
 @admin.register(ObserverProfile)
-class ObserverProfileAdmin(admin.ModelAdmin):
+class ObserverProfileAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
     list_display = (
         "display_name",
         "user",

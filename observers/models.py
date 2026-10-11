@@ -6,7 +6,6 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-
 ALERT_INTERESTS = frozenset(
     {"supernova", "variable_star", "nova", "asteroid", "other"}
 )

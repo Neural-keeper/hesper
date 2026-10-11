@@ -25,7 +25,7 @@ def make_profile(user: User) -> ObserverProfile:
 
 
 @pytest.mark.django_db
-def test_observer_profile_accepts_valid_values(user):
+def test_observer_profile_accepts_valid_values(user: User) -> None:
     profile = make_profile(user)
 
     profile.full_clean()
@@ -35,7 +35,7 @@ def test_observer_profile_accepts_valid_values(user):
 
 
 @pytest.mark.django_db
-def test_observer_profile_rejects_out_of_range_values(user):
+def test_observer_profile_rejects_out_of_range_values(user: User) -> None:
     profile = make_profile(user)
     profile.latitude = Decimal("91")
     profile.min_altitude_deg = Decimal("81")
@@ -50,9 +50,32 @@ def test_observer_profile_rejects_out_of_range_values(user):
 
 
 @pytest.mark.django_db
-def test_observer_profile_rejects_unknown_interest(user):
+def test_observer_profile_rejects_unknown_interest(user: User) -> None:
     profile = make_profile(user)
     profile.interests = ["unknown"]
 
     with pytest.raises(ValidationError, match="Unknown interests"):
         profile.full_clean()
+
+
+@pytest.mark.django_db
+def test_observer_profile_rejects_malformed_interests(user: User) -> None:
+    profile = make_profile(user)
+    profile.interests = "supernova"
+
+    with pytest.raises(ValidationError, match="Interests must be a list"):
+        profile.full_clean()
+
+
+@pytest.mark.django_db
+def test_observer_profile_rejects_out_of_range_longitude_and_altitude(
+    user: User,
+) -> None:
+    profile = make_profile(user)
+    profile.longitude = Decimal("181")
+    profile.min_altitude_deg = Decimal("-1")
+
+    with pytest.raises(ValidationError) as error:
+        profile.full_clean()
+
+    assert {"longitude", "min_altitude_deg"} <= set(error.value.message_dict)
