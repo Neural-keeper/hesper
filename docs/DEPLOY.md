@@ -24,7 +24,8 @@ Create a Web Service from the repository and select the Free plan. The
 [`render.yaml`](../render.yaml) Blueprint contains the service configuration:
 
 - `buildCommand` installs `uv`, installs the locked production dependencies,
-  collects static files, and runs migrations once during deployment.
+  collects static files, runs migrations once during deployment, and imports
+  the bundled star and constellation catalog.
 - `startCommand` runs Gunicorn and binds to Render's `$PORT`.
 - `healthCheckPath` uses `/healthz`, which does not touch the database.
 
@@ -32,7 +33,7 @@ If the service was created manually instead of from the Blueprint, set these
 commands explicitly:
 
 ```text
-Build Command: pip install uv && uv sync --frozen --no-dev && uv run python manage.py collectstatic --no-input && uv run python manage.py migrate --noinput
+Build Command: pip install uv && uv sync --frozen --no-dev && uv run python manage.py collectstatic --no-input && uv run python manage.py migrate --noinput && uv run python manage.py import_lore
 Start Command: uv run gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
 Health Check Path: /healthz
 ```
@@ -96,6 +97,14 @@ map it in the workflow; never put it in YAML or source.
 and supports manual runs. It also runs `prune_alerts` daily. A non-zero command
 exit fails the job. [`backup.yml`](../.github/workflows/backup.yml) creates a
 weekly custom-format PostgreSQL dump and retains the artifact for seven days.
+The backup job installs the PostgreSQL 18 client because `pg_dump` must be the
+same major version as, or newer than, the Neon server.
+
+The profile interest choices are loaded from the database, not hard-coded in
+the form. `import_lore` imports the bundled HYG bright-star catalog and the
+Stellarium IAU constellation catalog. If an existing deployment has no star or
+constellation choices, redeploy after adding the import step or run
+`uv run python manage.py import_lore` once against that deployment's database.
 
 ## 4. Deploy and verify
 
