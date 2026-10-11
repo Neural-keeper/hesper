@@ -19,6 +19,7 @@ from observers.models import (
 from sky import ObserverLocation, dark_window, visibility
 
 from .services import match_alerts_for_observer
+from .types import MatchedAlert
 
 
 class TonightView(LoginRequiredMixin, View):
@@ -32,22 +33,28 @@ class TonightView(LoginRequiredMixin, View):
         selected_class = request.GET.get("class", "").strip()
         maximum_magnitude = request.GET.get("max_magnitude", "").strip()
 
-        def matches_selected_interest(match: object) -> bool:
+        def matches_selected_interest(match: MatchedAlert) -> bool:
             if not selected_class:
                 return True
             if selected_class in ALERT_INTERESTS:
-                return getattr(match.alert, "alert_class", None) == selected_class
+                return match.alert.alert_class == selected_class
             if selected_class.startswith(CONSTELLATION_INTEREST_PREFIX):
                 target = selected_class.removeprefix(CONSTELLATION_INTEREST_PREFIX)
-                return getattr(match.constellation, "name", None) == target
+                return match.constellation.name == target
             if selected_class.startswith(STAR_INTEREST_PREFIX):
                 target = selected_class.removeprefix(STAR_INTEREST_PREFIX)
-                nearest_star = getattr(
-                    getattr(match, "lore", None),
-                    "nearest_star",
-                    None,
+                nearest_star = (
+                    getattr(match.lore, "nearest_star", None)
+                    if match.lore
+                    else None
                 )
-                return bool(nearest_star) and nearest_star.proper_name == target
+                if nearest_star is None:
+                    return False
+                nearest_star_name = getattr(nearest_star, "proper_name", None)
+                return (
+                    isinstance(nearest_star_name, str)
+                    and nearest_star_name == target
+                )
             return False
 
         filtered_matches = [

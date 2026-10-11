@@ -18,6 +18,21 @@ logger = logging.getLogger(__name__)
 _MJD_EPOCH = datetime(1858, 11, 17, tzinfo=timezone.utc)
 
 
+def _normalize_alert_class(class_name: Any) -> str | None:
+    if class_name is None:
+        return None
+    normalized = str(class_name).strip().upper()
+    if normalized.startswith("SN") or normalized in {"SUPERNOVA"}:
+        return "supernova"
+    if normalized in {"CV", "NOVA"}:
+        return "nova"
+    if normalized in {"ASTEROID", "MOVING"}:
+        return "asteroid"
+    if normalized in {"VARIABLE", "VARIABLE_STAR"}:
+        return "variable_star"
+    return "other"
+
+
 def _mjd_to_datetime(mjd: float) -> datetime:
     return _MJD_EPOCH + timedelta(days=mjd)
 
@@ -75,6 +90,10 @@ class AlerceSource:
         )
         for obj in objects.get("items", []):
             oid = str(obj["oid"])
+            alert_class = _normalize_alert_class(obj.get("class_name"))
+            class_confidence = None
+            if obj.get("probability") is not None:
+                class_confidence = Decimal(str(obj["probability"]))
             detections = self._get_json(
                 "lightcurve_api/detections",
                 {"survey_id": "lsst", "oid": oid},
@@ -101,7 +120,9 @@ class AlerceSource:
                     )
                 band = detection.get("band_name")
                 if band is None:
-                    band = detection.get("band_map", {}).get(str(detection.get("band")))
+                    band = detection.get("band_map", {}).get(
+                        str(detection.get("band"))
+                    )
                 yield NormalizedAlert(
                     source=self.name,
                     source_alert_id=str(detection["measurement_id"]),
@@ -113,5 +134,7 @@ class AlerceSource:
                     magnitude=magnitude,
                     magnitude_error=magnitude_error,
                     band=band,
+                    alert_class=alert_class,
+                    class_confidence=class_confidence,
                     raw=detection,
                 )

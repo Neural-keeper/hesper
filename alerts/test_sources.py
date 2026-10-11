@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timezone
+from decimal import Decimal
 from pathlib import Path
 from typing import Any, Literal
 from urllib.request import Request
@@ -35,7 +36,17 @@ def test_alerce_fixture_normalizes_detection() -> None:
     def opener(request: Request, timeout: float) -> _Response:
         calls.append((request.full_url, timeout))
         if "list_objects" in request.full_url:
-            return _Response({"items": [{"oid": detection["oid"]}]})
+            return _Response(
+                {
+                    "items": [
+                        {
+                            "oid": detection["oid"],
+                            "class_name": "SN",
+                            "probability": 0.99,
+                        }
+                    ]
+                }
+            )
         return _Response([detection])
 
     source = AlerceSource(opener=opener)
@@ -47,5 +58,7 @@ def test_alerce_fixture_normalizes_detection() -> None:
     assert alerts[0].source == "alerce"
     assert alerts[0].source_alert_id == str(detection["measurement_id"])
     assert alerts[0].band == "z"
+    assert alerts[0].alert_class == "supernova"
+    assert alerts[0].class_confidence == Decimal("0.99")
     assert 20 < alerts[0].magnitude < 21
     assert len(calls) == 2
