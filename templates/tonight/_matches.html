@@ -36,6 +36,23 @@
                         <dd>{{ match.visibility.moon_separation_deg|floatformat:1 }} degrees</dd>
                     </dl>
                     <p class="visibility-status"><span aria-hidden="true">●</span> Observable tonight</p>
+                    {% if match.lore %}
+                        <details class="sky-lore">
+                            <summary>Sky lore</summary>
+                            <p>
+                                Appeared in {{ match.lore.iau_constellation }}{% if match.lore.nearest_star %},
+                                near {{ match.lore.nearest_star.proper_name }}{% endif %}
+                            </p>
+                            {% for item in match.lore.cultural_lore %}
+                                <section>
+                                    <h4>{{ item.constellation_name }}</h4>
+                                    <p><strong>Culture:</strong> {{ item.culture_name }}</p>
+                                    <p>{{ item.description|linebreaksbr }}</p>
+                                    <p><a href="{{ item.source_url }}">Source and license ({{ item.license }})</a></p>
+                                </section>
+                            {% endfor %}
+                        </details>
+                    {% endif %}
                     {% if match.alert.cutout_url %}
                         <img src="{{ match.alert.cutout_url }}"
                              alt="Sky cutout for {{ match.alert.alert_class|title_class }} alert {{ match.alert.source_alert_id }}">

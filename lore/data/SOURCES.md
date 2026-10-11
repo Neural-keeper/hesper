@@ -46,3 +46,14 @@ Downloaded 2026-10-11. Stellarium culture files are pinned to commit
 - **License evidence:** [HYG LICENSE](https://codeberg.org/astronexus/hyg/src/branch/main/LICENSE)
   and [HYG README](https://codeberg.org/astronexus/hyg/src/branch/main/data/hyg/README.md)
 - **SHA-256:** `00b349893b9a53106dd488d8371e8d2fa586043e500bb3cdb8bff3931682197d`
+
+## Stellarium Indian Nakshatras sky culture
+
+- **Data:** [skycultures/indian_nakshatras at the pinned commit](https://github.com/Stellarium/stellarium/tree/3059843b82e22e31bd3e0f7cf13d0f292e72ef54/skycultures/indian_nakshatras)
+- **Downloaded to:** `stellarium/indian_nakshatras/`
+- **License:** CC BY 4.0, as stated in `description.md`
+- **Required credit:** Susanne M Hoffmann. Students of the University of Jena,
+  Germany: Vincent Gerlach, Fabian Hofer, Luca-Philipp Grumbach, Mher
+  Mnatsakanyan, Richard Hofmann and Moritz Rätz. Preserve the CC BY 4.0
+  attribution.
+- **License evidence:** [description.md](https://raw.githubusercontent.com/Stellarium/stellarium/3059843b82e22e31bd3e0f7cf13d0f292e72ef54/skycultures/indian_nakshatras/description.md)

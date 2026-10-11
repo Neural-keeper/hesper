@@ -9,6 +9,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.views import View
 
+from lore.models import SkyCulture
 from observers.models import ObserverProfile
 from sky import ObserverLocation, dark_window, visibility
 
@@ -77,6 +78,11 @@ class TonightView(LoginRequiredMixin, View):
             "selected_class": selected_class,
             "maximum_magnitude": maximum_magnitude,
             "interest_choices": sorted(profile.interests),
+            "lore_credits": SkyCulture.objects.exclude(credit_text="").order_by("name"),
+            "lore_catalog_credit": (
+                "Astronexus / David Nash and the HYG project. "
+                "Licensed under CC BY-SA 4.0."
+            ),
         }
         template = (
             self.partial_template_name

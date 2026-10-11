@@ -43,6 +43,17 @@
         <div class="site-footer-inner">
             <p><strong>hesper</strong> · Observe with clarity.</p>
             <p class="footer-note">Astronomical alerts, matched to your sky.</p>
+            {% if lore_credits or lore_catalog_credit %}
+                <details class="footer-credits">
+                    <summary>Data credits</summary>
+                    {% for culture in lore_credits %}
+                        <p><strong>{{ culture.name }}</strong>: {{ culture.credit_text|linebreaksbr }}</p>
+                    {% endfor %}
+                    <p><strong>HYG v4.4 star catalog</strong>: {{ lore_catalog_credit }}
+                        <a href="https://codeberg.org/astronexus/hyg">Source</a>
+                    </p>
+                </details>
+            {% endif %}
         </div>
     </footer>
     {% if user.is_authenticated and user.observer_profile %}

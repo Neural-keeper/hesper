@@ -6,6 +6,7 @@ from typing import cast
 from django.core.cache import cache
 
 from alerts.models import Alert
+from lore.services import lore_for_position
 from observers.models import ObserverProfile
 from sky import (
     ObserverLocation,
@@ -78,6 +79,7 @@ def match_alerts_for_observer(
                 constellation=constellation_of(
                     float(alert.ra_deg), float(alert.dec_deg)
                 ),
+                lore=lore_for_position(float(alert.ra_deg), float(alert.dec_deg)),
             )
         )
     matches.sort(key=lambda match: cast(datetime, match.visibility.best_time))
