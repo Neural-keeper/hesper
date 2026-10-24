@@ -4,7 +4,7 @@ from .models import Alert
 
 
 @admin.register(Alert)
-class AlertAdmin(admin.ModelAdmin):
+class AlertAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
     list_display = (
         "source",
         "source_alert_id",

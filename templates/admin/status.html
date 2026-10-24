@@ -1,0 +1,23 @@
+{% extends "admin/base_site.html" %}
+
+{% block title %}Hesper status{% endblock %}
+
+{% block content %}
+<h1>Hesper status</h1>
+<dl>
+    <dt>Alert source</dt>
+    <dd>{{ alert_source }}</dd>
+    <dt>Stored alerts</dt>
+    <dd>{{ alert_count }}</dd>
+    <dt>Last successful ingestion</dt>
+    <dd>{{ last_success_at|default:"Never" }}</dd>
+    <dt>Approximate database size</dt>
+    <dd>
+        {% if database_size_bytes is not None %}
+            {{ database_size_bytes|filesizeformat }}
+        {% else %}
+            Unavailable for this database engine
+        {% endif %}
+    </dd>
+</dl>
+{% endblock %}

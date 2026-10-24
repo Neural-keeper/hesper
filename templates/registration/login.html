@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Log in | hesper{% endblock %}
+{% block content %}
+<h1>Log in</h1>
+<p class="page-intro">Return to your personal view of the night sky.</p>
+{% include "forms/_errors.html" %}
+<form method="post" novalidate>
+    {% csrf_token %}
+    {% for field in form %}
+        <p class="form-field">
+            {{ field.label_tag }} {{ field }}
+            {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+        </p>
+    {% endfor %}
+    <button type="submit">Log in</button>
+</form>
+<p><a href="{% url 'accounts:password_reset' %}">Forgot your password?</a></p>
+{% endblock %}

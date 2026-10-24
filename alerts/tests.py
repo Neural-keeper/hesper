@@ -9,7 +9,7 @@ from .models import Alert
 from .types import NormalizedAlert
 
 
-def make_alert(source_alert_id="alert-1"):
+def make_alert(source_alert_id: str = "alert-1") -> Alert:
     return Alert(
         source="sample",
         source_alert_id=source_alert_id,
@@ -22,7 +22,7 @@ def make_alert(source_alert_id="alert-1"):
 
 
 @pytest.mark.django_db
-def test_alert_accepts_valid_values():
+def test_alert_accepts_valid_values() -> None:
     alert = make_alert()
 
     alert.full_clean()
@@ -32,22 +32,23 @@ def test_alert_accepts_valid_values():
 
 
 @pytest.mark.django_db
-def test_alert_rejects_out_of_range_coordinates_and_confidence():
+def test_alert_rejects_out_of_range_coordinates_and_confidence() -> None:
     alert = make_alert()
     alert.ra_deg = Decimal("361")
     alert.dec_deg = Decimal("-91")
     alert.class_confidence = Decimal("1.1")
+    alert.magnitude_error = Decimal("-0.1")
 
     with pytest.raises(ValidationError) as error:
         alert.full_clean()
 
-    assert {"ra_deg", "dec_deg", "class_confidence"} <= set(
+    assert {"ra_deg", "dec_deg", "class_confidence", "magnitude_error"} <= set(
         error.value.message_dict
     )
 
 
 @pytest.mark.django_db
-def test_alert_source_and_id_are_unique():
+def test_alert_source_and_id_are_unique() -> None:
     make_alert().save()
 
     with pytest.raises(IntegrityError):
@@ -55,7 +56,7 @@ def test_alert_source_and_id_are_unique():
 
 
 
-def test_normalized_alert_is_frozen():
+def test_normalized_alert_is_frozen() -> None:
     alert = NormalizedAlert(
         source="sample",
         source_alert_id="alert-1",
@@ -67,4 +68,20 @@ def test_normalized_alert_is_frozen():
     )
 
     with pytest.raises(AttributeError):
-        alert.magnitude = Decimal("13")
+        setattr(alert, "magnitude", Decimal("13"))
+
+
+def test_normalized_alert_nullable_fields_default_to_none() -> None:
+    alert = NormalizedAlert(
+        source="sample",
+        source_alert_id="alert-1",
+        observed_at=datetime(2026, 1, 1, tzinfo=timezone.utc),
+        received_at=datetime(2026, 1, 1, tzinfo=timezone.utc),
+        ra_deg=Decimal("83.8"),
+        dec_deg=Decimal("-5.4"),
+        magnitude=Decimal("14.2"),
+    )
+
+    assert alert.band is None
+    assert alert.alert_class is None
+    assert alert.raw == {}

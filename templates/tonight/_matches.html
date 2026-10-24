@@ -1,0 +1,70 @@
+{% load tonight_tags %}
+<section id="match-results" aria-live="polite" aria-labelledby="matches-heading">
+    <div class="section-heading matches-heading">
+        <div>
+            <p class="eyebrow">MATCHED FOR YOUR EQUIPMENT</p>
+            <h2 id="matches-heading">Observable alerts</h2>
+        </div>
+    </div>
+    {% if matches %}
+        <div class="alert-list">
+            {% for match in matches %}
+                <article class="alert-card">
+                    <div class="alert-card-topline">
+                        <span class="alert-class">{{ match.alert.alert_class|title_class }}</span>
+                        <span class="confidence">{{ match.alert.class_confidence|confidence_percent }}</span>
+                    </div>
+                    <h3>{{ match.constellation.name }} <span class="constellation-abbr">{{ match.constellation.abbreviation }}</span></h3>
+                    {% if match.alert.source == "sample" %}
+                        <p class="sample-label">Sample data</p>
+                    {% endif %}
+                    <p class="alert-location">{{ match.alert.ra_deg }}° RA · {{ match.alert.dec_deg }}° Dec · {{ match.alert.source_alert_id }}</p>
+                    <dl class="alert-details">
+                        <dt>Brightness</dt>
+                        <dd>{{ match.alert.magnitude }}{% if match.alert.band %} {{ match.alert.band }} band{% endif %}</dd>
+                        <dt>Constellation</dt>
+                        <dd>{{ match.constellation.name }} ({{ match.constellation.abbreviation }})</dd>
+                        <dt>Best time</dt>
+                        <dd><time datetime="{{ match.visibility.best_time|utc_iso }}">{{ match.visibility.best_time|local_time:local_timezone }}</time></dd>
+                        <dt>Maximum altitude</dt>
+                        <dd>{{ match.visibility.max_altitude_deg|floatformat:1 }} degrees</dd>
+                        <dt>Observable from</dt>
+                        <dd><time datetime="{{ match.visibility.observable_from|utc_iso }}">{{ match.visibility.observable_from|local_time:local_timezone }}</time></dd>
+                        <dt>Observable until</dt>
+                        <dd><time datetime="{{ match.visibility.observable_until|utc_iso }}">{{ match.visibility.observable_until|local_time:local_timezone }}</time></dd>
+                        <dt>Moon separation</dt>
+                        <dd>{{ match.visibility.moon_separation_deg|floatformat:1 }} degrees</dd>
+                    </dl>
+                    <p class="visibility-status"><span aria-hidden="true">●</span> Observable tonight</p>
+                    {% if match.lore %}
+                        <details class="sky-lore">
+                            <summary>Sky lore</summary>
+                            <p>
+                                Appeared in {{ match.lore.iau_constellation }}{% if match.lore.nearest_star %},
+                                near {{ match.lore.nearest_star.proper_name }}{% endif %}
+                            </p>
+                            {% for item in match.lore.cultural_lore %}
+                                <section>
+                                    <h4>{{ item.constellation_name }}</h4>
+                                    <p><strong>Culture:</strong> {{ item.culture_name }}</p>
+                                    <p>{{ item.description|linebreaksbr }}</p>
+                                    <p><a href="{{ item.source_url }}">Source and license ({{ item.license }})</a></p>
+                                </section>
+                            {% endfor %}
+                        </details>
+                    {% endif %}
+                    {% if match.alert.cutout_url %}
+                        <img src="{{ match.alert.cutout_url }}"
+                             alt="Sky cutout for {{ match.alert.alert_class|title_class }} alert {{ match.alert.source_alert_id }}">
+                    {% endif %}
+                </article>
+            {% endfor %}
+        </div>
+    {% elif not window.has_darkness %}
+        <p>No matches because there is no darkness tonight at your latitude. Try again during a darker season or adjust your location.</p>
+    {% elif selected_class or maximum_magnitude %}
+        <p>No alerts match these filters. Try a different class or a fainter maximum magnitude.</p>
+    {% else %}
+        <p>Nothing brighter than magnitude {{ profile.limiting_magnitude }} is observable tonight. Try increasing your limiting magnitude or changing your interests.</p>
+    {% endif %}
+</section>

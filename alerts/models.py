@@ -51,7 +51,7 @@ class Alert(models.Model):
         ],
     )
     cutout_url = models.URLField(blank=True, null=True)
-    raw = models.JSONField(default=dict)
+    raw = models.JSONField(default=dict, blank=True)
 
     class Meta:
         constraints = [
@@ -70,3 +70,11 @@ class Alert(models.Model):
 
     def __str__(self) -> str:
         return f"{self.source}:{self.source_alert_id}"
+
+
+class IngestionState(models.Model):
+    source = models.CharField(max_length=50, unique=True)
+    last_success_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self) -> str:
+        return self.source

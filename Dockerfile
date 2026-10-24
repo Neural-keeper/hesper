@@ -11,9 +11,14 @@ COPY --from=uv /uv /uvx /bin/
 WORKDIR /app
 
 COPY pyproject.toml uv.lock ./
-RUN uv sync --no-install-project --no-dev
+RUN uv sync --no-dev
 
 COPY . .
 
+RUN uv run python manage.py collectstatic --no-input
+
+RUN chmod +x /app/docker-entrypoint.sh
+
 EXPOSE 8000
-CMD ["uv", "run", "gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
+CMD [".venv/bin/gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000"]

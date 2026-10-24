@@ -6,10 +6,11 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-
 ALERT_INTERESTS = frozenset(
     {"supernova", "variable_star", "nova", "asteroid", "other"}
 )
+CONSTELLATION_INTEREST_PREFIX = "constellation:"
+STAR_INTEREST_PREFIX = "star:"
 
 
 def validate_interests(value: Any) -> None:
@@ -18,7 +19,19 @@ def validate_interests(value: Any) -> None:
     ):
         raise ValidationError("Interests must be a list of alert class names.")
 
-    unknown_interests = set(value) - ALERT_INTERESTS
+    unknown_interests = {
+        item
+        for item in value
+        if item not in ALERT_INTERESTS
+        and not (
+            item.startswith(CONSTELLATION_INTEREST_PREFIX)
+            and len(item) > len(CONSTELLATION_INTEREST_PREFIX)
+        )
+        and not (
+            item.startswith(STAR_INTEREST_PREFIX)
+            and len(item) > len(STAR_INTEREST_PREFIX)
+        )
+    }
     if unknown_interests:
         raise ValidationError(
             "Unknown interests: " + ", ".join(sorted(unknown_interests))
@@ -68,7 +81,11 @@ class ObserverProfile(models.Model):
         default=Decimal("14"),
         validators=[MinValueValidator(Decimal("5")), MaxValueValidator(Decimal("20"))],
     )
-    interests = models.JSONField(default=list, validators=[validate_interests])
+    interests = models.JSONField(
+        default=list,
+        blank=True,
+        validators=[validate_interests],
+    )
     theme = models.CharField(
         max_length=9, choices=Theme.choices, default=Theme.SYSTEM
     )

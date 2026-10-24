@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }} | hesper{% endblock %}
+{% block content %}
+<p class="eyebrow">YOUR OBSERVATORY</p>
+<h1>{{ page_title }}</h1>
+<p class="page-intro">A few details help us turn a stream of alerts into a useful observing plan.</p>
+{% include "forms/_errors.html" %}
+<form method="post" novalidate>
+    {% csrf_token %}
+    {% for field in form %}
+        <p class="form-field">
+            {{ field.label_tag }}
+            {% if field.name == "latitude" or field.name == "longitude" %}
+                {{ field }}
+                <small id="id_{{ field.name }}_help">{{ field.help_text }}</small>
+            {% else %}
+                {{ field }}
+                {% if field.help_text %}<small id="id_{{ field.name }}_help">{{ field.help_text }}</small>{% endif %}
+            {% endif %}
+            {% for error in field.errors %}<span class="field-error" id="id_{{ field.name }}_error">{{ error }}</span>{% endfor %}
+        </p>
+    {% endfor %}
+    <p>
+        <button type="button" id="use-location" class="button button-secondary">Use my current location</button>
+        <small>This is optional. Your browser will ask permission and fill in latitude and longitude; manual entry always works.</small>
+        <span id="location-status" role="status"></span>
+    </p>
+    {% if form.instance.timezone and form.instance.pk %}
+        <p class="timezone-result">Time zone: <strong>{{ form.instance.timezone }}</strong></p>
+    {% endif %}
+    <button type="submit" class="button button-primary">Save profile <span aria-hidden="true">→</span></button>
+</form>
+<script>
+document.getElementById("use-location").addEventListener("click", function () {
+    const status = document.getElementById("location-status");
+    if (!navigator.geolocation) {
+        status.textContent = "Location is not available in this browser.";
+        return;
+    }
+    status.textContent = "Requesting your location…";
+    navigator.geolocation.getCurrentPosition(function (position) {
+        document.getElementById("id_latitude").value = position.coords.latitude.toFixed(4);
+        document.getElementById("id_longitude").value = position.coords.longitude.toFixed(4);
+        status.textContent = "Location filled in. Review it before saving.";
+    }, function () {
+        status.textContent = "Location was not available. Enter coordinates manually.";
+    });
+});
+</script>
+{% endblock %}

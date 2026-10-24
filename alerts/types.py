@@ -15,8 +15,8 @@ class NormalizedAlert:
     magnitude: Decimal
     object_id: str | None = None
     magnitude_error: Decimal | None = None
-    band: str = ""
-    alert_class: str = ""
+    band: str | None = None
+    alert_class: str | None = None
     class_confidence: Decimal | None = None
     cutout_url: str | None = None
     raw: dict[str, Any] = field(default_factory=dict)

@@ -5,10 +5,13 @@ description = "Accessible astronomy alerts for amateur observers"
 requires-python = ">=3.12"
 dependencies = [
     "Django>=5.2,<5.3",
+    "astropy>=7.0,<8",
+    "astroplan>=0.10,<1",
     "django-environ>=0.12,<0.13",
     "django-htmx>=1.26,<2",
     "gunicorn>=23,<24",
     "psycopg[binary]>=3.2,<4",
+    "timezonefinder>=6.5,<7",
     "whitenoise>=6.9,<7",
 ]
 
