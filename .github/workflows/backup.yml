@@ -1,0 +1,43 @@
+name: Database backup
+
+on:
+  schedule:
+    - cron: "30 3 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo install --directory --mode=0755 /usr/share/postgresql-common/pgdg
+          curl --fail --silent --show-error \
+            https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+            | sudo tee /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc >/dev/null
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] \
+            https://apt.postgresql.org/pub/repos/apt \
+            $(lsb_release --codename --short)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list >/dev/null
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client-18
+      - name: Dump Neon database
+        env:
+          DATABASE_URL: ${{ secrets.NEON_DIRECT_DATABASE_URL }}
+        run: |
+          set -eu
+          mkdir -p backups
+          /usr/lib/postgresql/18/bin/pg_dump "$DATABASE_URL" \
+            --format=custom \
+            --file="backups/hesper-$(date -u +%Y%m%dT%H%M%SZ).dump"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hesper-database-backup-${{ github.run_id }}
+          path: backups/*.dump
+          retention-days: 7
